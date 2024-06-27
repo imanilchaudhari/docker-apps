@@ -1,0 +1,184 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq-logs:/var/log/rabbitmq
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.1
+        aliases:
+          - rabbitmq
+
+  syslogng:
+    image: balabit/syslog-ng:latest
+    restart: unless-stopped
+    ports:
+      - 514:5514/udp
+      - 601:6601/tcp
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.2
+        aliases:
+          - syslogng
+
+  zipkin:
+    image: openzipkin/zipkin
+    restart: unless-stopped
+    ports:
+      - "9411:9411"
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.3
+        aliases:
+          - zipkin
+
+  redis:
+    image: redis
+    restart: unless-stopped
+    ports:
+      - 6379
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.4
+        aliases:
+          - redisdb
+
+  postgres:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DATABASE: postgres_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: Asia/Kathmandu
+    volumes:
+      - .:/var/lib/postgres
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.5
+        aliases:
+          - postgres
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5000:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.6
+        aliases:
+          - pgadmin
+
+  mariadb:
+    image: 'mariadb:10.3.35'
+    restart: unless-stopped
+    platform: linux/amd64
+    command: '--sql_mode=""'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database
+      MYSQL_ROOT_HOST: '%'
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.7
+        aliases:
+          - mariadb
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    links:
+      - mariadb
+    ports:
+      - 8089:8080
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.8
+        aliases:
+          - adminer
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: unless-stopped
+    ports:
+      - 1025
+      - 8025
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.9
+        aliases:
+          - mailhog
+  
+  heimdall:
+    image: linuxserver/heimdall
+    container_name: heimdall
+    volumes:
+      - ./appdata/heimdall:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    ports:
+      - 83:80
+      - 443:443
+    restart: unless-stopped
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.10
+        aliases:
+          - heimdall
+
+  nginx:
+    image: linuxserver/nginx
+    container_name: nginx
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - ./appdata/nginx:/config
+    ports:
+      - 81:80
+      - 444:443
+    restart: unless-stopped
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.11
+        aliases:
+          - nginx
+
+volumes:
+  rabbitmq-data:
+    driver: local
+  rabbitmq-logs:
+    driver: local
+  pgadmin-data:
+    driver: local
+  postgres-data:
+    driver: local
+  mariadb-data:
+    driver: local
+
+networks:
+  docker-apps-network:
+    name: docker-apps-network
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
