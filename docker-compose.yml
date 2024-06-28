@@ -1,6 +1,7 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: rabbitmq
     restart: unless-stopped
     ports:
       - 5672:5672
@@ -16,6 +17,7 @@ services:
 
   syslogng:
     image: balabit/syslog-ng:latest
+    container_name: syslogng
     restart: unless-stopped
     ports:
       - 514:5514/udp
@@ -28,6 +30,7 @@ services:
 
   zipkin:
     image: openzipkin/zipkin
+    container_name: zipkin
     restart: unless-stopped
     ports:
       - "9411:9411"
@@ -37,8 +40,9 @@ services:
         aliases:
           - zipkin
 
-  redis:
+  redisdb:
     image: redis
+    container_name: redisdb
     restart: unless-stopped
     ports:
       - 6379
@@ -50,6 +54,7 @@ services:
 
   postgres:
     image: postgres:14-alpine
+    container_name: postgres
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -70,6 +75,7 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
+    container_name: pgadmin
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
@@ -86,6 +92,7 @@ services:
 
   mariadb:
     image: 'mariadb:10.3.35'
+    container_name: mariadb
     restart: unless-stopped
     platform: linux/amd64
     command: '--sql_mode=""'
@@ -103,6 +110,7 @@ services:
 
   adminer:
     image: adminer
+    container_name: adminer
     restart: unless-stopped
     links:
       - mariadb
@@ -116,6 +124,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog
+    container_name: mailhog
     restart: unless-stopped
     ports:
       - 1025
