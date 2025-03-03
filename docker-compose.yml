@@ -199,23 +199,23 @@ services:
         aliases:
           - mongodb
   consul:
-    image: bitnami/consul:latest
-    networks:
-      - docker-apps-network
+    image: hashicorp/consul:latest
+    container_name: consul
+    restart: unless-stopped 
     environment:
-      - CONSUL_BOOTSTRAP_EXPECT=3
-      - CONSUL_CLIENT_LAN_ADDRESS=0.0.0.0
-      - CONSUL_DISABLE_KEYRING_FILE=true
-      - CONSUL_RETRY_JOIN_ADDRESS=consul
+      - CONSUL_BIND_INTERFACE=eth0 # Interface used for Consul
+      - CONSUL_LOCAL_CONFIG={"verify_incoming":false,"verify_outgoing":false,"verify_server_hostname":false}
     ports:
-      - '8300:8300'
-      - '8301:8301'
-      - '8301:8301/udp'
       - '8500:8500'
-      - '8600:8600'
       - '8600:8600/udp'
     volumes:
-      - 'consul-data:/bitnami'
+      - 'consul-data:/consul/data'
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.12
+        aliases:
+          - consul
+    command: "agent -dev -client=0.0.0.0" # Run Consul agent in development mode
 
 volumes:
   rabbitmq-data:
