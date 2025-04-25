@@ -46,6 +46,8 @@ services:
     restart: unless-stopped
     ports:
       - 6379
+    volumes:
+      - redis-data:/data
     networks:
       docker-apps-network:
         ipv4_address: 172.20.128.4
@@ -171,17 +173,26 @@ services:
         ipv4_address: 172.20.128.11
         aliases:
           - nginx
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "6831:6831/udp"
-      - "16686:16686"
-    restart: unless-stopped
-    networks:
-      docker-apps-network:
-        ipv4_address: 172.20.128.12
-        aliases:
-          - jaeger
+  # jaeger:
+  #   image: jaegertracing/all-in-one:latest
+  #   container_name: jaeger
+  #   environment:
+  #     - COLLECTOR_ZIPKIN_HTTP_PORT=9412
+  #   ports:
+  #     - "5775:5775/udp"
+  #     - "6831:6831/udp"
+  #     - "6832:6832/udp"
+  #     - "5778:5778"
+  #     - "16686:16686"
+  #     - "14268:14268"
+  #     - "14250:14250"
+  #     - "9412:9412"
+  #   restart: unless-stopped
+  #   networks:
+  #     docker-apps-network:
+  #       ipv4_address: 172.20.128.12
+  #       aliases:
+  #         - jaeger
   mongodb:
     image: mongo
     container_name: mongodb
@@ -221,6 +232,8 @@ volumes:
   rabbitmq-data:
     driver: local
   rabbitmq-logs:
+    driver: local
+  redis-data:
     driver: local
   pgadmin-data:
     driver: local
