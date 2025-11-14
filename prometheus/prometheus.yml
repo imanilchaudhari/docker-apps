@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+  - job_name: "onu-macacl-service"
+    static_configs:
+      - targets: ["onu-macacl-service:3333"]
+  - job_name: "router-config-service"
+    static_configs:
+      - targets: ["router-config-service:3333"]
