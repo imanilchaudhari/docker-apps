@@ -318,6 +318,25 @@ services:
         aliases:
           - portainer
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      docker-apps-network:
+        ipv4_address: 172.20.128.20
+        aliases:
+          - minio
+
 volumes:
   rabbitmq-data:
     driver: local
@@ -342,6 +361,8 @@ volumes:
   kafka_data:
     driver: local
   portainer-data:
+    driver: local
+  minio-data:
     driver: local
 
 networks:
